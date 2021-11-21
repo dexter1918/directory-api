@@ -1,0 +1,40 @@
+{
+    "employees": [
+        {
+            "id": 587412,
+            "name": "John Denver",
+            "email": "denver.john@yahoo.com",
+            "dept": "Human Resoure",
+            "role": "TAG",
+            "city": "Phoenix",
+            "country": "USA"
+        },
+        {
+            "id": 587413,
+            "name": "Elton John",
+            "email": "eltonjohn@gmail.com",
+            "dept": "Salesforce",
+            "role": "Developer",
+            "city": "Arizona",
+            "country": "USA"
+        },
+        {
+            "id": 587418,
+            "name": "Sabana Azmi",
+            "email": "sabana.azmi@outlook.com",
+            "dept": "Business Management",
+            "role": "Manager",
+            "city": "Mumbai",
+            "country": "India"
+        },
+        {
+            "id": 587419,
+            "name": "Rhea Roy",
+            "email": "rhroy@gmail.com",
+            "dept": "DevOps",
+            "role": "DevOps Engineer",
+            "city": "Pune",
+            "country": "India"
+        }
+    ]
+}

@@ -1,0 +1,82 @@
+#%RAML 1.0
+title: Directory-API
+version: 1.0
+protocols: HTTPS
+mediaType: application/json
+
+traits: 
+    client-id-required: 
+        headers: 
+            client_id: 
+                type: string
+            client_secret: 
+                type: string
+
+types:  
+    employee: !include datatype/employee-datatype.raml
+    employee-update: !include datatype/employee-update-datatype.raml
+
+/employees: 
+    is: [client-id-required]
+    get: 
+        responses: 
+            200: 
+                body: 
+                    application/json:
+                        examples: 
+                            output: !include example/employees-example.json
+
+/employee: 
+    /add:
+        is: [client-id-required] 
+        post: 
+            body: 
+                application/json: 
+                    type: employee
+                    examples: 
+                        output: !include example/employee-example.raml
+            responses: 
+                200: 
+                    body: 
+                        application/json: 
+                            example: { "message": "Success|Failure" }
+                                          
+    /delete:
+        is: [client-id-required] 
+        delete: 
+            queryParameters: 
+                id: 
+                    description: Employee ID
+                    type: integer
+                    required: true
+                    example: 148319
+            responses: 
+                200: 
+                    body: 
+                        application/json: 
+                            example: { "message": "Success|Failure" }
+                                
+    /update:
+        is: [client-id-required] 
+        patch: 
+            queryParameters: 
+                id: 
+                    description: Employee ID
+                    type: integer
+                    required: true
+                    example: 148319
+            body: 
+                application/json: 
+                    type: employee-update
+                    examples: 
+                        input: !include example/employee-update-example.raml
+            responses: 
+                200: 
+                    body: 
+                        application/json: 
+                            example: { "message": "Success|Failure" }
+                                
+            
+
+
+   

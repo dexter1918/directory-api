@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:mongo="http://www.mulesoft.org/schema/mule/mongo"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mongo/current/mule-mongo.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="get-employees-flow" doc:id="b23a785d-f947-4569-a874-9541237cd383" >
+		<mongo:find-documents doc:name="Get Employees Details" doc:id="70e9965e-95bb-49c8-9b4c-6b9082b23c3d" config-ref="MongoDB_Config" collectionName="Directory-Collection" fields="id,name,email,dept,role,city,country" />
+		<ee:transform doc:name="Transform the MongoDB Response" doc:id="069b8969-4345-4222-8d88-1837350f173f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"employees": (payload map () -> $ - "_id") orderBy $."id"	
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="add-employee-flow" doc:id="c422cda6-ece9-4d61-80db-ebf08e5906c0" >
+		<set-variable value="#[1]" doc:name="operationId" doc:id="89099994-fc04-4a22-a551-ca7bca890751" variableName="operationId" />
+		<flow-ref doc:name="check-if-employee-exists-flow" doc:id="3030c13b-dd3b-40dd-a983-cafcba72994e" name="check-if-employee-exists-flow" target="employeeExists"/>
+		<choice doc:name="check if Employee already exists" doc:id="1a4771fb-55f8-4b4a-b4e1-2f957ab5578f" >
+			<when expression="#[vars.employeeExists == 1]">
+				<ee:transform doc:name="Status: Already Exists" doc:id="0fc45b27-006c-4846-8a67-524011dd7d60" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Employee Id Already Exists!",
+	"action": "Check Employees list to get the last Employee ID!"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<mongo:insert-document collectionName="Directory-Collection" doc:name="Add Employee" doc:id="b33796ac-8069-45dd-abe7-da482fc16ddc" config-ref="MongoDB_Config" >
+				</mongo:insert-document>
+				<ee:transform doc:name="Status: Success" doc:id="0f6505e4-6693-4851-bc77-cc562d1b23c3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Added Successfully!"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+		<flow name="delete-employee-flow" doc:id="047d56f2-92cb-4ce8-ac2b-76fed4f275d6" >
+		<set-variable value="#[0]" doc:name="operationId" doc:id="54c6a383-d991-4287-af0d-bc500190c861" variableName="operationId"/>
+		<flow-ref doc:name="check-if-employee-exists-flow" doc:id="dec1258a-c116-43db-b5ed-71396190dc4c" name="check-if-employee-exists-flow" target="employeeExists"/>
+		<choice doc:name="check if the Employee exist" doc:id="1beca3fa-a53d-41a8-86cb-b41e0f46e561">
+			<when expression="#[vars.employeeExists == 1]">
+				<mongo:remove-documents doc:name="Remove Employee" doc:id="1abeb937-66c8-4fa4-8f85-ef48de538018" config-ref="MongoDB_Config" collectionName="Directory-Collection">
+			<mongo:query><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+	"id": attributes.queryParams.id as Number
+}]]]></mongo:query>
+		</mongo:remove-documents>
+				<ee:transform doc:name="Status: Success" doc:id="b4d61d40-899f-41cc-9ee7-e4c75d1a3ca4">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Deleted Successfully!"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</when>
+			<otherwise>
+				<ee:transform doc:name="Status: Doesn't exist" doc:id="f2e70b3d-25a0-4cc2-b809-4d3981649c04">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Employee Id Doesn't exist!"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+
+	</flow>
+	<flow name="update-employee-flow" doc:id="31140590-1d09-40b6-8085-6a7e16b3c3b5" >
+		<set-variable value="#[2]" doc:name="operationId" doc:id="3a5fd580-fa3e-493a-a657-bf2aee226d16" variableName="operationId" />
+		<flow-ref doc:name="check-if-employee-exists-flow" doc:id="270b6405-83cd-4e7c-a452-80bd055214e0" name="check-if-employee-exists-flow" target="employeeExists"/>
+		<choice doc:name="check if the Employee exist" doc:id="1b797af4-759d-4dfe-b362-02e4b1d3c569" >
+			<when expression="#[vars.employeeExists == 1]">
+				<mongo:update-documents doc:name="Update Employee" doc:id="dacd3d4f-8fa9-46e2-a491-1760ad62346a" config-ref="MongoDB_Config" collectionName="Directory-Collection" >
+					<mongo:query ><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+	"id": attributes.queryParams.id as Number
+}]]]></mongo:query>
+				</mongo:update-documents>
+				<ee:transform doc:name="Status: Success" doc:id="1f4e7c86-f79f-4aa7-b9a5-31fdc33b025e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Updated Successfully!"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Status: Doesn't exist" doc:id="9742fce4-e857-4b38-941a-c3c588769f38">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Employee Doesn't exist!"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="check-if-employee-exists-flow" doc:id="06b16a26-f8c6-4bb5-aefb-db802c18b328" >
+		<mongo:find-documents collectionName="Directory-Collection" fields="id,name,email,dept,role,city,country" doc:name="Get Employees Details" doc:id="be29d80c-9ccc-4388-b1af-c64ab2ab072b" config-ref="MongoDB_Config" target="employees" />
+		<ee:transform doc:name="Convert mongoDB response to json" doc:id="114a2112-01bd-4c32-959e-d8ca3a192281">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="employees"><![CDATA[%dw 2.0
+output application/json
+---
+vars.employees]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="employee exists: 1, employee doesn't exists: 0" doc:id="3b45035d-3408-4259-a73b-3d72c534059c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if (vars.operationId == 1) 
+	if (sizeOf(vars.employees filter ((item, index) -> (item.id==payload.id or item.email==payload.email))) > 0) 1 else 0
+else if (vars.operationId == 0 or vars.operationId == 2)
+	if (sizeOf(vars.employees filter ((item, index) -> (item.id==attributes.queryParams.id as Number))) > 0) 1 else 0
+else
+	0
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

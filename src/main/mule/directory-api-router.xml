@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+    <flow name="delete:\employee\delete:directory-api-config">
+		<flow-ref doc:name="delete-employee-flow" doc:id="d2f94c23-d33f-439d-82d0-132c6ea75c9d" name="delete-employee-flow"/>
+    </flow>
+    <flow name="patch:\employee\update:application\json:directory-api-config">
+		<flow-ref doc:name="update-employee-flow" doc:id="0bb88fd6-0707-4d31-82ec-245f004c5398" name="update-employee-flow"/>
+    </flow>
+    <flow name="get:\employees:directory-api-config">
+        <flow-ref doc:name="get-employees-flow" doc:id="b92fc74b-0e8a-438f-802e-21ee8e35f197" name="get-employees-flow"/>
+    </flow>
+    <flow name="post:\employee\add:application\json:directory-api-config">
+		<flow-ref doc:name="add-employee-flow" doc:id="9ac79530-63a5-48a9-aeaa-922fd6734e88" name="add-employee-flow"/>
+    </flow>
+</mule>
